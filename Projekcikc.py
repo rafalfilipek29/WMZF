@@ -34,13 +34,17 @@ class Czastka():
 
     def droga(self, t):
         if self.przyspieszenie_ms == 0:
-            t_dylatacja = self.czynnik_lor * t
+            t_dylatacja = t/self.czynnik_lor
             droga = self.predkosc_ms * t_dylatacja
+            droga_new=self.predkosc_ms*t
         else:
-            droga = (pr_swiatla ** 2 / self.przyspieszenie_ms) * (np.sqrt(1 + ((self.przyspieszenie_ms * t + self.predkosc_ms * self.czynnik_lor) ** 2) / pr_swiatla ** 2) - self.czynnik_lor)
-        return droga
+            droga = ((np.sqrt(1+(((self.przyspieszenie_ms * t + self.predkosc_ms * self.czynnik_lor)**2) \
+                                  / pr_swiatla**2)))- self.czynnik_lor)* (pr_swiatla ** 2)/self.przyspieszenie_ms
+            droga_new=self.predkosc_ms*t+(1/2)*self.przyspieszenie_ms*t**2
+        return droga,droga_new
 
 
-czasteczka = Czastka(0.9, 5)
+czasteczka = Czastka(10000000, 1, przysp = 3,typ=1)
 
 print(czasteczka.droga(1))
+
