@@ -9,42 +9,38 @@ class Czastka():
     predkosc_ms = None
     masa_spoczynkowa = None
     masa_relatywistyczna = None
+    przyspieszenie_ul = None
+    przyspieszenie_ms = None
 
-    def __init__(self, pr, mas_spo, typ=0):
+    def __init__(self, pr, mas_spo, przysp=0, typ=0):
         if typ == 0:
             while pr >= 1:
                 pr = float(input('Podaj poprawna predkosc (mniej niz 1)'))
             self.predkosc_ul = pr
-            self.predkosc_ms=pr*pr_swiatla
+            self.predkosc_ms = pr * pr_swiatla
+            self.przyspieszenie_ul = przysp
+            self.przyspieszenie_ms = przysp * pr_swiatla
         else:
             while pr >= pr_swiatla:
                 pr = float(input('Podaj poprawna predkosc (mniej niz 299 792 458 m/s)'))
             self.predkosc_ul = pr / pr_swiatla
-            self.predkosc_ms=pr
-        self.czynnik_lor=np.power(1-self.predkosc_ul**2,-0.5)
+            self.predkosc_ms = pr
+            self.przyspieszenie_ms = przysp
+            self.przyspieszenie_ul = przysp / pr_swiatla
+        self.czynnik_lor = np.power(1 - self.predkosc_ul ** 2, -0.5)
         self.masa_spoczynkowa = mas_spo
-        #self.masa_relatywistyczna = self.masa_spoczynkowa * self.predkosc_ms
+        # self.masa_relatywistyczna = self.masa_spoczynkowa * self.predkosc_ms
         # self.energia_kinetyczna=(1/2)*self.masa*self.predkosc**2
 
-
-
-
-    def droga(self,t):
-        t_dylatacja=self.czynnik_lor*t
-        droga=self.predkosc_ms*t_dylatacja
-        xk=self.predkosc_ms*t
-        x_rel=xk*self.czynnik_lor
-        x_lor=xk*np.power(1-self.predkosc_ul**2,0.5)
-        return droga,x_rel,x_lor
-
+    def droga(self, t):
+        if self.przyspieszenie_ms == 0:
+            t_dylatacja = self.czynnik_lor * t
+            droga = self.predkosc_ms * t_dylatacja
+        else:
+            droga = (pr_swiatla ** 2 / self.przyspieszenie_ms) * (np.sqrt(1 + ((self.przyspieszenie_ms * t + self.predkosc_ms * self.czynnik_lor) ** 2) / pr_swiatla ** 2) - self.czynnik_lor)
+        return droga
 
 
 czasteczka = Czastka(0.9, 5)
 
-
-#komentarz do sprawdzenia
-#komentarz2
-
-
-
-print(czasteczka.droga(5))
+print(czasteczka.droga(1))
