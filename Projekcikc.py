@@ -42,4 +42,9 @@ class Czastka():
 czasteczka = Czastka(0.9, 5)
 
 
+#komentarz do sprawdzenia
+#komentarz2
+
+
+
 print(czasteczka.droga(5))
