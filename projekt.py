@@ -1,5 +1,9 @@
 import numpy as np
 
+import mpmath as mp
+
+mp.mp.dps = 50
+
 pr_swiatla = 299792458
 c = 1
 
@@ -18,17 +22,17 @@ class Czastka():
             if typ == 0:
                 while pr >= 1:
                     pr = float(input('Podaj poprawna predkosc (mniej niz 1)'))
-                self.predkosc_ul = pr
-                self.predkosc_ms = pr * pr_swiatla
-                self.przyspieszenie_ul = przysp
-                self.przyspieszenie_ms = przysp * pr_swiatla
+                self.predkosc_ul = np.array([pr])
+                self.predkosc_ms = np.array([pr * pr_swiatla])
+                self.przyspieszenie_ul = np.array([przysp])
+                self.przyspieszenie_ms = np.array([przysp * pr_swiatla])
             else:
                 while pr >= pr_swiatla:
                     pr = float(input('Podaj poprawna predkosc (mniej niz 299 792 458 m/s)'))
-                self.predkosc_ul = pr / pr_swiatla
-                self.predkosc_ms = pr
-                self.przyspieszenie_ms = przysp
-                self.przyspieszenie_ul = przysp / pr_swiatla
+                self.predkosc_ul = np.array([pr / pr_swiatla])
+                self.predkosc_ms = np.array([pr])
+                self.przyspieszenie_ms = np.array([przysp])
+                self.przyspieszenie_ul = np.array([przysp / pr_swiatla])
         else:
             if typ==0:
                 while abs(pr_x) >= 1:
@@ -56,7 +60,7 @@ class Czastka():
                 self.przyspieszenie_ul = ((a_x**2)+(a_y**2)+(a_z**2))**(0.5) / pr_swiatla
                 wektor=np.array([pr_x,pr_y,pr_z])
                 self.wektor_predkosci=wektor/wektor.max()
-        self.czynnik_lor = (1 - self.predkosc_ul ** 2) **(-0.5)
+        self.czynnik_lor = np.array([(1 - self.predkosc_ul ** 2) **(-0.5)])
         self.masa_spoczynkowa = mas_spo
         # self.masa_relatywistyczna = self.masa_spoczynkowa * self.predkosc_ms
         # self.energia_kinetyczna=(1/2)*self.masa*self.predkosc**2
@@ -67,12 +71,13 @@ class Czastka():
             droga = self.predkosc_ms * t_dylatacja
             droga_new=self.predkosc_ms*t
         else:
-            droga = ((np.sqrt(1+(((self.przyspieszenie_ms * t + self.predkosc_ms * self.czynnik_lor)**2) \
-                                  / pr_swiatla**2)))- self.czynnik_lor)* (pr_swiatla ** 2)/self.przyspieszenie_ms
+            droga = np.array([((np.sqrt(1+(((self.przyspieszenie_ms * t + self.predkosc_ms * self.czynnik_lor)**2) \
+                                  / pr_swiatla**2)))- self.czynnik_lor)* (pr_swiatla ** 2)/self.przyspieszenie_ms])
             droga_new=self.predkosc_ms*t+(1/2)*self.przyspieszenie_ms*t**2
         return droga,droga_new
 
+dane = np.array([10000, 1, 300])
+czasteczka = Czastka(mp.mpf(100), 0, przysp = mp.mpf(3),typ=1)
 
-czasteczka = Czastka(0, 1, przysp = 0,typ=1,trojwymiar=1, pr_x=10000000, pr_y=5000000,pr_z=2000000)
 
 print(czasteczka.droga(1))
