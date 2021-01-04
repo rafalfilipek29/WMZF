@@ -86,7 +86,7 @@ class Czastka:
 
     def droga(self, t):
         if self.przyspieszenie_ms == 0:
-            t_dylatacja = mp.mpf(t / self.czynnik_lor)
+            t_dylatacja = t / self.czynnik_lor
             droga = self.predkosc_ms * t_dylatacja
             droga_new = self.predkosc_ms * t
         else:
@@ -111,7 +111,7 @@ class Czastka:
         return t
 
     "Funkcja liczaca predkosc jednej czastki, poruszajacej sie ruchem jednostajnym prostoliniowym, wzgledem innej"
-    "czastki poruszajacej sie tak samo, lecz z inna wartoscia szybkosci"
+    "czastki poruszajacej ruchem jednostajnym prostoliniowym, lecz z innym wektorem predkosci"
 
     def wzgledna_predkosc(self, czasteczka2):
         pr_2_wzgl_1 = (
@@ -119,9 +119,7 @@ class Czastka:
                     1 - mp.fdot(self.wektor_predkosci, czasteczka2.wektor_predkosci) / pr_swiatla ** 2) *
              (czasteczka2.wektor_predkosci - self.wektor_predkosci + self.wektor_predkosci * (self.czynnik_lor - 1) *
               ((mp.fdot(self.wektor_predkosci, czasteczka2.wektor_predkosci) / self.predkosc_ms ** 2) - 1))))
-        szyb_2_wzgle_1 = (pr_2_wzgl_1[0] ** 2 + pr_2_wzgl_1[1] ** 2 + pr_2_wzgl_1[2] ** 2) ** (0.5)
-        #t_dyl_wzgledna = t*czasteczka2.czynnik_lor**(-1)*(1-(szyb_2_wzgle_1/pr_swiatla)**2)**0.5
-        #droga_wzgledna = t_dyl_wzgledna szyb_2_wzgle_1
+        szyb_2_wzgle_1 = (pr_2_wzgl_1[0] ** 2 + pr_2_wzgl_1[1] ** 2 + pr_2_wzgl_1[2] ** 2) ** 0.5
         return pr_2_wzgl_1, szyb_2_wzgle_1
 
     "Funkcja obliczajaca mase relatywistyczna obiektu"
@@ -129,8 +127,6 @@ class Czastka:
     def masa_relatywistyczna(self, v):
         m_relat = self.masa_spoczynkowa * ((1 - (v / pr_swiatla) ** 2) ** (-0.5))
         return m_relat
-
-
 
 
 "Funkcja bedaca menu"
@@ -145,14 +141,14 @@ def menu():
     p = True
     while p:
         print(
-            'to program liczacy droge pokonana przez czastki, z wykorzystaniem wzorow relatywistycznych\nczy działać '
+            'to program liczacy droge pokonana przez czastki, z wykorzystaniem wzorow relatywistycznych.\nCzy działać '
             'w trójwymiarze? nie(0)/(1)tak')
         q = True
         while q:
             try:
                 troj = int(input())
             except ValueError:
-                troj=2
+                troj = 2
             if troj == 1 or troj == 0:
                 q = False
             else:
@@ -163,7 +159,7 @@ def menu():
             try:
                 typdanych = int(input())
             except ValueError:
-                typdanych=2
+                typdanych = 2
             if typdanych == 1 or typdanych == 0:
                 q = False
             else:
@@ -172,16 +168,16 @@ def menu():
                     'na sekunde (1)\n')
         wybor = int(input('Chcesz policzyc droge dla jednej poruszajacej sie czastki, czy dwoch? Jedna(1)/dwie(2)\n'))
         if wybor == 1:
-            m=int(input("podaj mase czastki\n"))
+            m = int(input("podaj mase czastki\n"))
             if troj == 1:
                 v_x = float(input('podaj predkosc wzgledem osi x\n'))
                 v_y = float(input('podaj predkosc wzgledem osi y\n'))
                 v_z = float(input('podaj predkosc wzgledem osi z\n'))
-                if v_x==0 and v_y==0 and v_z==0:
+                if v_x == 0 and v_y == 0 and v_z == 0:
                     a_x = float(input('podaj przyspieszenie względem osi x\n'))
                     a_y = float(input('podaj przyspieszenie względem osi y\n'))
                     a_z = float(input('podaj przyspieszenie względem osi z\n'))
-                    a=((a_x**2)+(a_y**2)+(a_z**2))**(0.5)
+                    a = ((a_x ** 2) + (a_y ** 2) + (a_z ** 2)) ** 0.5
                 else:
                     a = float(input('podaj przyspieszenie w kierunku predkosci\n'))
                 czasteczka = Czastka(typ=typdanych, pr_x=v_x, pr_y=v_y, pr_z=v_z, przysp_x=a, mas_spo=m)
@@ -195,17 +191,42 @@ def menu():
             print('droga obliczona ze wzorow mechaniki klasycznej wynosi\n', new,
                   '\ndroga obliczona ze wzorow relatywistycznych wynosi\n', rel, '\ni jest o ', (new - rel) * 100 / new,
                   '% mniejsza')
-            if czasteczka.przyspieszenie_ms==0:
-                print('masa czasteczki poruszajacej sie z taka predkoscia wynosi',czasteczka.masa_relatywistyczna(czasteczka.predkosc_ms))
-            while True:
+            if czasteczka.przyspieszenie_ms == 0:
+                print('masa czasteczki poruszajacej sie z taka predkoscia wynosi',
+                      czasteczka.masa_relatywistyczna(czasteczka.predkosc_ms))
+
+            if czasteczka.przyspieszenie_ms == 0:
+                l = 0
+            else:
+                l = 1
+            while l == 0:
+                dalej = int(
+                    input('\n\nopcje:\n(1)-narysuj wykres\n(2)-zacznij ponownie \n'
+                          '(3)-zakończ działanie programu\n'))
+                if dalej == 1:
+                    x = np.linspace(1, t, 1000)
+                    y = czasteczka.droga(x)[0]
+                    plt.plot(x, y, color='g', label='droga rel.')
+                    plt.legend('droga rel.', loc='upper center', shadow=True)
+                    plt.xlabel('czas')
+                    plt.ylabel('droga')
+                    plt.show()
+                if dalej == 2:
+                    l = False
+                    break
+                if dalej == 3:
+                    p = False
+                    break
+            while l == 1:
                 dalej = int(
                     input('\n\nopcje:\n(1)-narysuj wykres\n(2)-zacznij ponownie \n'
                           '(3)-zakończ działanie programu\n'))
                 if dalej == 1:
                     rodzaj = int(input('\n\nna wykresie ma byc\n(1) - droga relatywistyczna i newtonowska\n '
                                        '(2) - droga relatywistyczna i droga fotonu\n'
-                                       ' (3) droga relatywistyczna, droga newtonowska i droga fotonu\n (4) masy od predkosci\n'))
-                    x = np.linspace(1, float(czasteczka.czas()), 1000)
+                                       '(3) droga relatywistyczna, droga newtonowska i droga fotonu\n (4) masy od '
+                                       'predkosci\n'))
+                    x = np.linspace(1, t, 1000)
                     y = czasteczka.droga(x)[0]
                     z = pr_swiatla * x - pr_swiatla ** 2 / czasteczka.przyspieszenie_ms
                     w = czasteczka.droga(x)[1]
@@ -214,20 +235,37 @@ def menu():
                     if rodzaj == 1:
                         plt.plot(x, y, color='g', label='droga rel.')
                         plt.plot(x, w, color='r', label='droga new.')
+                        plt.legend(('droga rel.', 'droga new.'), loc='upper center', shadow=True)
+                        plt.xlabel('czas')
+                        plt.ylabel('droga')
                         plt.show()
+
                     if rodzaj == 2:
                         plt.plot(x, y, color='g', label='droga rel.')
-                        plt.plot(x, z)
+                        plt.plot(x, z, color='b', label='asymptota (przesunieta droga, ktora pokanalby foton')
+                        plt.legend(('droga rel.', 'asymptota (przesunieta droga, ktora pokanalby foton'),
+                                   loc='upper center', shadow=True)
+                        plt.xlabel('czas')
+                        plt.ylabel('droga')
                         plt.show()
                     if rodzaj == 3:
                         plt.plot(x, y, color='g', lw=1, ls='-.', label='droga rel.')
-                        plt.plot(x, z)
+                        plt.plot(x, z, color='b', label='asymptota (przesunieta droga, ktora pokanalby foton')
                         plt.plot(x, w, label='droga new.')
+                        plt.legend(('droga rel.', 'asymptota (przesunieta droga, ktora pokanalby foton', 'droga new.'),
+                                   loc='upper center', shadow=True)
+                        plt.xlabel('czas')
+                        plt.ylabel('droga')
                         plt.show()
                     if rodzaj == 4:
-                        plt.plot(n,m, color = 'g')
+                        plt.plot(n, m, color='g', label='masa od predkosci')
+                        plt.legend('masa od predkosci',
+                                   loc='upper center', shadow=True)
+                        plt.xlabel('predkosc')
+                        plt.ylabel('masa')
                         plt.show()
                 elif dalej == 2:
+                    l = False
                     break
                 elif dalej == 3:
                     p = False
@@ -245,25 +283,32 @@ def menu():
                 m2 = float(input('podaj podaj mase spoczynkowa pierwszej czasteczki\n'))
                 czasteczka2 = Czastka(typ=typdanych, pr_x=v2_x, pr_y=v2_y, pr_z=v2_z, mas_spo=m2)
                 wzgl_predkosc, wzgl_szybkosc = czasteczka1.wzgledna_predkosc(czasteczka2)
-                print("wzgledna predkosc czasktki 1 wzgledem czastki 2 to: ", wzgl_predkosc)
+                print("wzgledna predkosc czastki 1 wzgledem czastki 2 to: ", wzgl_predkosc)
                 print("natomiast wzgledna szybkosc to: ", wzgl_szybkosc)
-
+                print("masa czastki 1 wzgledem czastki 2 wynosi: ",
+                      czasteczka1.masa_relatywistyczna(czasteczka2.wzgledna_predkosc(czasteczka1)[1]))
+                print("masa czastki 2 wzgledem czastki 1 wynosi: ",
+                      czasteczka2.masa_relatywistyczna(czasteczka1.wzgledna_predkosc(czasteczka2)[1]))
             else:
                 v1 = float(input('podaj predkosc pierwszej czastki czastki\n'))
                 m1 = float(input('podaj podaj mase spoczynkowa pierwszej czasteczki\n'))
                 czasteczka1 = Czastka(pr_x=v1, typ=typdanych, mas_spo=m1)
                 v2 = float(input('podaj predkosc drugiej czastki czastki\n'))
-                m2 = float(input('podaj podaj mase spoczynkowa pierwszej czasteczki\n'))
+                m2 = float(input('podaj podaj mase spoczynkowa drugiej czasteczki\n'))
                 czasteczka2 = Czastka(pr_x=v2, typ=typdanych, mas_spo=m2)
                 wzgl_predkosc, wzgl_szybkosc = czasteczka1.wzgledna_predkosc(czasteczka2)
                 print("wzgledna szybkosc to: ", wzgl_szybkosc)
-            #t = float(input('w jakim czasie czastki wykonuja ruch?\n'))
+                print("masa czastki 1 wzgledem czastki 2 wynosi: ",
+                      czasteczka1.masa_relatywistyczna(czasteczka2.wzgledna_predkosc(czasteczka1)[1]))
+                print("masa czastki 2 wzgledem czastki 1 wynosi: ",
+                      czasteczka2.masa_relatywistyczna(czasteczka1.wzgledna_predkosc(czasteczka2)[1]))
             while True:
-                dalej=int(input("Rozpoczac ponownie (1) czy zakonczyc dzialanie programu (2)\n"))
-                if dalej==1:
+                dalej = int(input("Rozpoczac ponownie (1) czy zakonczyc dzialanie programu (2)\n"))
+                if dalej == 1:
                     break
-                elif dalej==2:
-                    p=False
+                elif dalej == 2:
+                    p = False
                     break
+
 
 menu()
