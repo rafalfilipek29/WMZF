@@ -54,7 +54,6 @@ class Czastka:
             self.predkosc_ms = mp.mpf(self.predkosc_ul * pr_swiatla)
             self.przyspieszenie_ul = mp.mpf(((przysp_x ** 2) + (przysp_y ** 2) + (przysp_z ** 2)) ** 0.5)
             self.przyspieszenie_ms = mp.mpf(self.przyspieszenie_ul * pr_swiatla)
-            # self.przysp_3D(typ=0)
         else:
             z = True
             while z:
@@ -76,7 +75,6 @@ class Czastka:
             self.predkosc_ul = mp.mpf(self.predkosc_ms / pr_swiatla)
             self.przyspieszenie_ms = mp.mpf(((przysp_x ** 2) + (przysp_y ** 2) + (przysp_z ** 2)) ** 0.5)
             self.przyspieszenie_ul = mp.mpf(self.przyspieszenie_ms / pr_swiatla)
-            # self.przysp_3D(typ=1)
         self.wektor_predkosci = np.array([mp.mpf(pr_x), mp.mpf(pr_y), mp.mpf(pr_z)])
         self.wektor_przyspieszenia = np.array([mp.mpf(przysp_x), mp.mpf(przysp_y), mp.mpf(przysp_z)])
         self.czynnik_lor = mp.mpf((1 - self.predkosc_ul ** 2) ** (-0.5))
@@ -131,18 +129,13 @@ class Czastka:
         return m_relat
 
 
-
-
-
-
-
-
 "Komendy odpowiadajace za samo okno programu"
 okno = tk.Tk()
 okno.geometry('2100x580')
 okno.title('Projekt Manhattan')
 nazwa = tk.Label(okno, text="Projekt Manhattan")
 
+"tk.LabelFrame(nazwa) tworzy ramkę przypisaną do okna"
 "Trzy ramki, pierwsza dla predkosci bez przyspieszenia, druga dla predkosci z przyspieszeniem, trzecia dla wzglednej"
 "predkosci"
 ramka1 = tk.LabelFrame(okno)
@@ -153,26 +146,30 @@ ramka3 = tk.LabelFrame(okno)
 
 "Funkcje sluzace do zamiany okienek"
 
+"Funkcja place(x,y) służy do umiejcowienia elementu (ramki, przycisku, etykiety) do okienka/ramki "
+" atrybut place_forget() sprawia, ze dany element staje się niewidoczny"
+
 
 def zmien1():
-    ramka2.grid_forget()
-    ramka3.grid_forget()
-    ramka1.grid(row=3, pady=30)
+    ramka2.place_forget()
+    ramka3.place_forget()
+    ramka1.place(x=0, y=50, width=1500, height=400)
 
 
 def zmien2():
-    ramka1.grid_forget()
-    ramka3.grid_forget()
-    ramka2.grid(row=3, pady=30)
+    ramka1.place_forget()
+    ramka3.place_forget()
+    ramka2.place(x=0, y=50, width=1500, height=400)
 
 
 def zmien3():
-    ramka1.grid_forget()
-    ramka2.grid_forget()
-    ramka3.grid(row=3, pady=30)
+    ramka1.place_forget()
+    ramka2.place_forget()
+    ramka3.place(x=0, y=50, width=1500, height=400)
 
 
-"przyciski odpowiadajace za zmiane okienka"
+"przyciski odpowiadajace za zmiane okienka. atrubyt place(x,y) umieszcza element w punkcie (x,y), gdzie punkt (0,0)"
+"znajduje sie w lewym gornym rogu okna/ramki"
 strona1 = tk.Button(okno, text="Ruch jednej czastki bez przyspieszenia", command=zmien1)
 strona1.place(x=0, y=0)
 
@@ -182,7 +179,8 @@ strona2.place(x=500, y=0)
 strona3 = tk.Button(okno, text="Ruch wzgledny dwoch czastek", command=zmien3)
 strona3.place(x=1000, y=0)
 
-"pola do wpisywania znakow jak i opisy do tych pol"
+"pola do wpisywania znakow jak i opisy do tych pol. tk.Entry sluzy do stworzenia 'okienka' do wpisywania danych."
+"Insert zaś umieszcza dany tekst w okienku tekstowym"
 tk.Label(ramka1, text='podaj skladowa x predkosci').grid(row=0, column=0, padx=2, pady=2)
 wspx = tk.Entry(ramka1, width=50)
 wspx.grid(row=0, column=1)
@@ -213,6 +211,10 @@ masa.insert(0, '0')
 
 
 def pisz(wartosc):
+    # obsluga wyjatkow. Jezeli wpisana wartosc nie jest liczba, zwraca ValueError, wpisuje
+    # w okienku odpowiednie znaki oraz konczy dzialanie programu
+    # gdy jest liczba, lecz nie mieszczaca sie w odpowiednim przedziale, zwraca w okienku odpowiednie znaki i konczy
+    # dzialanie programu
     try:
         float(wspx.get())
     except ValueError:
@@ -285,69 +287,42 @@ def pisz(wartosc):
             masa.delete(0, tk.END)
             masa.insert(0, "to musi byc liczba dodatnia")
             return
-
+    '''w zaleznosci od typu danych (m/s czy ulamek predkosci swiatla) program tworzy inne obiekty klasy Czastka.
+    Tworzone sa odpowiednie etykiety, ktore mowia o wynikach obliczen'''
+    global czasteczka1
     if wartosc == 1:
         czasteczka1 = Czastka(float(wspx.get()), float(wspy.get()), float(wspz.get()), mas_spo=float(masa.get()), typ=1)
-        rel, new = czasteczka1.droga(float(wspt.get()))
-
-        momo1 = tk.Label(ramka1,
-                         text='Droga w sensie newtonowskim: ' + str(czasteczka1.droga(float(wspt.get()))[1])).grid(
-            row=7,
-            column=2,
-            padx=2,
-            pady=2)
-        momo2 = tk.Label(ramka1,
-                         text='Droga w sensie relatywistycznym: ' + str(czasteczka1.droga(float(wspt.get()))[0])).grid(
-            row=8, column=2, padx=2, pady=2)
-        try:
-            (new - rel) * 100 / new
-        except ZeroDivisionError:
-            momo3 = tk.Label(ramka1,
-                             text='zerowa predkosc, brak wzglednej drogi').grid(row=9, column=2, padx=2, pady=2)
-        else:
-            momo3 = tk.Label(ramka1,
-                             text='Droga w sensie relatywistycznym jest mniejsza od drogi w sensie newtonowsim o: ' + str(
-                                 (new - rel) * 100 / new) + '%').grid(row=9, column=2, padx=2, pady=2)
-        momo3 = tk.Label(ramka1,
-                         text='masa relatywistyczna: ' + str(
-                             czasteczka1.masa_relatywistyczna(czasteczka1.predkosc_ms))).grid(
-            row=10,
-            column=2,
-            padx=2,
-            pady=2)
     elif wartosc == 2:
         czasteczka1 = Czastka(float(wspx.get()), float(wspy.get()), float(wspz.get()), mas_spo=float(masa.get()), typ=0)
-        rel, new = czasteczka1.droga(float(wspt.get()))
-
-        tk.Label(ramka1, text='Droga w sensie newtonowskim: ' + str(czasteczka1.droga(float(wspt.get()))[1])).grid(
-            row=7,
-            column=2,
-            padx=2,
-            pady=2)
-        tk.Label(ramka1, text='Droga w sensie relatywistycznym: ' + str(czasteczka1.droga(float(wspt.get()))[0])).grid(
-            row=8, column=2, padx=2, pady=2)
-        try:
-            (new - rel) * 100 / new
-        except ZeroDivisionError:
-            momo3 = tk.Label(ramka1,
-                             text='zerowa predkosc, brak wzglednej drogi').grid(row=9, column=2, padx=2, pady=2)
-        else:
-            momo3 = tk.Label(ramka1,
-                             text='Droga w sensie relatywistycznym jest mniejsza od drogi w sensie newtonowsim o: ' + str(
-                                 (new - rel) * 100 / new) + '%').grid(row=9, column=2, padx=2, pady=2)
-        tk.Label(ramka1,
-                 text='masa relatywistyczna: ' + str(czasteczka1.masa_relatywistyczna(czasteczka1.predkosc_ms))).grid(
-            row=10,
-            column=2,
-            padx=2,
-            pady=2)
+    rel, new = czasteczka1.droga(float(wspt.get()))
+    momo1 = tk.Label(ramka1, text='Droga w sensie newtonowskim: ' + str(new), width=150)
+    momo1.place(x=300, y=130)
+    momo2 = tk.Label(ramka1, text='Droga w sensie relatywistycznym: ' + str(rel), width=150)
+    momo2.place(x=300, y=150)
+    momo3 = tk.Label(ramka1, width=150)
+    "obsluga wyjatkow sluzaca do okreslenia, czy zachodzi dzielenie przez 0"
+    try:
+        (new - rel) * 100 / new
+    except ZeroDivisionError:
+        momo3.config(text='zerowa predkosc, brak wzglednej drogi')
+    else:
+        momo3.config(text='Droga w sensie relatywistycznym jest mniejsza od drogi w sensie newtonowsim o: ' + str(
+            (new - rel) * 100 / new) + '%')
+    momo3.place(x=300, y=170)
 
 
+'''tk.Button sluzy do stworzenia przycisku o okreslonej wartosci, szerokosci oraz funkcji.' 
+command = lambda: pisz(l.get()) znaczy, ze po wcisnieciu przycisku uruchamia sie funkcja 'pisz'
+wraz z argumentem l.get() czyli wartosci zmiennej tk.IntVar, istotnej dla obiektow typu"
+radiobutton'''
 button1 = tk.Button(ramka1, text='wyswietl wartosci', width=20, command=lambda: pisz(l.get()))
 button1.grid(row=7, column=0)
 
+"tworzenie zmiennej tk.IntVar oraz ustawienie jej wartosci na 1"
 l = tk.IntVar()
 l.set(1)
+'''stworzenie obiektu typu RadioButton, ktory zwiazany jest ze zmienna l. Uruchomienie tego obiektu sprawia, ze
+zmienna l przyjmuje wartosc rowna zmiennej value w danym obiekcie'''
 radio11 = tk.Radiobutton(ramka1, text='metry na sekunde', variable=l, value=1)
 radio11.grid(row=0, column=3, padx=2, pady=2)
 
@@ -382,6 +357,8 @@ tk.Label(ramka2, text='podaj mase m').grid(row=7, column=0, padx=2, pady=2)
 masa2 = tk.Entry(ramka2, width=50)
 masa2.grid(row=7, column=1)
 masa2.insert(0, '0')
+
+"funkcja dzialajaca jak funkcja 'pisz'"
 
 
 def pisz2(wartosc, typ):
@@ -503,133 +480,48 @@ def pisz2(wartosc, typ):
             wspzp2.delete(0, tk.END)
             wspzp2.insert(0, "to musi byc liczba nieujemna")
             return
-
     if typ == 1:
         if wartosc == 1:
             czasteczka10 = Czastka(float(wspx2.get()), float(wspy2.get()), float(wspz2.get()), float(wspxp.get()),
                                    mas_spo=float(masa2.get()), typ=1)
-            rel, new = czasteczka10.droga(float(wspt2.get()))
-            momo1 = tk.Label(ramka2, text='Droga w sensie newtonowskim: ' + str(new)).grid(row=7, column=2,
-                                                                                           columnspan=3,
-                                                                                           padx=2,
-                                                                                           pady=2)
-            momo2 = tk.Label(ramka2, text='Droga w sensie relatywistycznym: ' + str(rel)).grid(row=8, column=2,
-                                                                                               columnspan=3,
-                                                                                               padx=2, pady=2)
-
-            try:
-                (new - rel) * 100 / new
-            except ZeroDivisionError:
-                momo3 = tk.Label(ramka2,
-                                 text='zerowa droga, brak wzglednej drogi').grid(row=9, column=2, columnspan=3, padx=2,
-                                                                                 pady=2)
-            else:
-                momo3 = tk.Label(ramka2,
-                                 text='Droga w sensie relatywistycznym jest mniejsza od drogi w sensie newtonowsim o: ' + str(
-                                     (new - rel) * 100 / new) + '%').grid(row=9, column=2, columnspan=3, padx=2, pady=2)
-
-            momo4 = tk.Label(ramka2, text='masa relatywistyczna: ' + str(
-                czasteczka10.masa_relatywistyczna(
-                    czasteczka10.predkosc_przyspieszanego_obiektu(float(wspt2.get()))))).grid(
-                row=10,
-                column=2, columnspan=3,
-                padx=2,
-                pady=2)
-
         elif wartosc == 2:
             czasteczka10 = Czastka(przysp_x=float(wspxp2.get()), przysp_y=float(wspyp2.get()),
                                    przysp_z=float(wspzp2.get()),
                                    mas_spo=float(masa2.get()),
                                    typ=1)
-            rel, new = czasteczka10.droga(float(wspt2.get()))
-            momo1 = tk.Label(ramka2, text='Droga w sensie newtonowskim: ' + str(new)).grid(row=7, column=2,
-                                                                                           columnspan=3,
-                                                                                           padx=2,
-                                                                                           pady=2)
-            momo2 = tk.Label(ramka2, text='Droga w sensie relatywistycznym: ' + str(rel)).grid(row=8, column=2,
-                                                                                               columnspan=3,
-                                                                                               padx=2, pady=2)
-            try:
-                (new - rel) * 100 / new
-            except ZeroDivisionError:
-                momo3 = tk.Label(ramka2,
-                                 text='zerowa droga, brak wzglednej drogi').grid(row=9, column=2, columnspan=3, padx=2,
-                                                                                 pady=2)
-            else:
-                momo3 = tk.Label(ramka2,
-                                 text='Droga w sensie relatywistycznym jest mniejsza od drogi w sensie newtonowsim o: ' + str(
-                                     (new - rel) * 100 / new) + '%').grid(row=9, column=2, columnspan=3, padx=2, pady=2)
-
-            momo4 = tk.Label(ramka2, text='masa relatywistyczna: ' + str(
-                czasteczka10.masa_relatywistyczna(
-                    czasteczka10.predkosc_przyspieszanego_obiektu(float(wspt2.get()))))).grid(
-                row=10,
-                column=2, columnspan=3,
-                padx=2,
-                pady=2)
-    if typ == 2:
+    elif typ == 2:
         if wartosc == 1:
             czasteczka10 = Czastka(float(wspx2.get()), float(wspy2.get()), float(wspz2.get()), float(wspxp.get()),
                                    mas_spo=float(masa2.get()), typ=0)
-            rel, new = czasteczka10.droga(float(wspt2.get()))
-            momo1 = tk.Label(ramka2, text='Droga w sensie newtonowskim: ' + str(new)).grid(row=7, column=2,
-                                                                                           columnspan=3,
-                                                                                           padx=2,
-                                                                                           pady=2)
-            momo2 = tk.Label(ramka2, text='Droga w sensie relatywistycznym: ' + str(rel)).grid(row=8, column=2,
-                                                                                               columnspan=3,
-                                                                                               padx=2, pady=2)
-            try:
-                (new - rel) * 100 / new
-            except ZeroDivisionError:
-                momo3 = tk.Label(ramka2,
-                                 text='zerowa droga, brak wzglednej drogi').grid(row=9, column=2, columnspan=3, padx=2,
-                                                                                 pady=2)
-            else:
-                momo3 = tk.Label(ramka2,
-                                 text='Droga w sensie relatywistycznym jest mniejsza od drogi w sensie newtonowsim o: ' + str(
-                                     (new - rel) * 100 / new) + '%').grid(row=9, column=2, columnspan=3, padx=2, pady=2)
-
-            momo4 = tk.Label(ramka2, text='masa relatywistyczna: ' + str(
-                czasteczka10.masa_relatywistyczna(
-                    czasteczka10.predkosc_przyspieszanego_obiektu(float(wspt2.get()))))).grid(
-                row=10,
-                column=2, columnspan=3,
-                padx=2,
-                pady=2)
-
         elif wartosc == 2:
             czasteczka10 = Czastka(przysp_x=float(wspxp2.get()), przysp_y=float(wspyp2.get()),
                                    przysp_z=float(wspzp2.get()),
                                    mas_spo=float(masa2.get()),
                                    typ=0)
-            rel, new = czasteczka10.droga(float(wspt2.get()))
-            momo1 = tk.Label(ramka2, text='Droga w sensie newtonowskim: ' + str(new)).grid(row=7, column=2,
-                                                                                           columnspan=3,
-                                                                                           padx=2,
-                                                                                           pady=2)
-            momo2 = tk.Label(ramka2, text='Droga w sensie relatywistycznym: ' + str(rel)).grid(row=8, column=2,
-                                                                                               columnspan=3,
-                                                                                               padx=2, pady=2)
-            try:
-                (new - rel) * 100 / new
-            except ZeroDivisionError:
-                momo3 = tk.Label(ramka2,
-                                 text='zerowa droga, brak wzglednej drogi').grid(row=9, column=2, columnspan=3, padx=2,
-                                                                                 pady=2)
-            else:
-                momo3 = tk.Label(ramka2,
-                                 text='Droga w sensie relatywistycznym jest mniejsza od drogi w sensie newtonowsim o: ' + str(
-                                     (new - rel) * 100 / new) + '%').grid(row=9, column=2, columnspan=3, padx=2, pady=2)
 
-            momo4 = tk.Label(ramka2, text='masa relatywistyczna: ' + str(
-                czasteczka10.masa_relatywistyczna(
-                    czasteczka10.predkosc_przyspieszanego_obiektu(float(wspt2.get()))))).grid(
-                row=10,
-                column=2, columnspan=3,
-                padx=2,
-                pady=2)
+    rel, new = czasteczka10.droga(float(wspt2.get()))
+    momo1 = tk.Label(ramka2, text='Droga w sensie newtonowskim: ' + str(new), width=150)
+    momo1.place(x=300, y=200)
 
+    momo2 = tk.Label(ramka2, text='Droga w sensie relatywistycznym: ' + str(rel), width=150)
+    momo2.place(x=300, y=220)
+
+    momo3 = tk.Label(ramka2, width=150)
+
+    try:
+        (new - rel) * 100 / new
+    except ZeroDivisionError:
+        momo3.config(text='Zerowa droga, brak wzglednej drogi')
+    else:
+        momo3.config(text='Droga w sensie relatywistycznym jest mniejsza od drogi w sensie newtonowsim o: ' + str(
+            (new - rel) * 100 / new) + '%')
+    momo3.place(x=300, y=240)
+
+    momo4 = tk.Label(ramka2, text='masa relatywistyczna: ' + str(
+        czasteczka10.masa_relatywistyczna(
+            czasteczka10.predkosc_przyspieszanego_obiektu(float(wspt2.get())))), width=150)
+    momo4.place(x=300, y=260)
+    "wlacza odpowiednie przycisku, aby mozna bylo ich uzywac"
     button_wykres1.config(state='normal')
     button_wykres2.config(state='normal')
     button_wykres3.config(state='normal')
@@ -638,6 +530,8 @@ def pisz2(wartosc, typ):
 
 button2 = tk.Button(ramka2, text='wyswietl wartosci', width=20, command=lambda: pisz2(r.get(), l2.get()))
 button2.grid(row=8, column=0)
+
+"funkcje, ktore sluza do tworzenia wykresow"
 
 
 def wykres_new_rel():
@@ -690,6 +584,7 @@ def wykres_masa_pred():
     plt.show()
 
 
+"przyciski dla wykresow"
 button_wykres1 = tk.Button(ramka2, text="narysuj wykresy drogi relatywistycznej i newtonowskiej",
                            command=wykres_new_rel)
 button_wykres1.grid(row=9, column=0)
@@ -724,13 +619,7 @@ tk.Label(ramka2, text='podaj skladowa z przyspieszenia').grid(row=2, column=3, p
 wspzp2 = tk.Entry(ramka2)
 wspzp2.grid(row=2, column=4)
 wspzp2.insert(0, '0')
-
-# tk.Label(ramka2, text='podaj czas t').grid(row=3, column=3, padx=2, pady=2)
-# wsptp2 = tk.Entry(ramka2)
-# wsptp2.grid(row=3, column=4)
-# wsptp2.insert(0, '0')
-
-
+"wylaczenie odpowiednich pol do wpisywania wartosci"
 wspx2.config(state='disabled')
 wspy2.config(state='disabled')
 wspz2.config(state='disabled')
@@ -741,6 +630,8 @@ wspxp2.config(state='disabled')
 wspyp2.config(state='disabled')
 wspzp2.config(state='disabled')
 masa2.config(state='disabled')
+
+"funkcja, ktora wlacza odpowiednie pola do wpisywania, zostawiajac wylaczone te zbedne"
 
 
 def zerowa_niezerowa(wartosc):
@@ -765,7 +656,6 @@ def zerowa_niezerowa(wartosc):
         wspxp2.config(state='normal')
         wspyp2.config(state='normal')
         wspzp2.config(state='normal')
-        # wsptp2.config(state='normal')
 
 
 r = tk.IntVar(0)
@@ -787,10 +677,6 @@ radio3.grid(row=3, column=2, padx=2, pady=2)
 
 radio4 = tk.Radiobutton(ramka2, text='ulamek predkosci swiatla', variable=l2, value=2)
 radio4.grid(row=4, column=2, padx=2, pady=2)
-# UWAGAAAAAAAAAAAAAAAAAAAAAAAAAA to niżej służy do zrobienia typu z 1 na 0
-# n=tk.IntVar()
-# radio3 = tk.Radiobutton(ramka2, text="asdas",variable = n, value = 1)
-# radio3.grid(row=2,column=5,padx=2,pady=2)
 
 tk.Label(ramka3, text='podaj skladowa x predkosci czastki pierwszej').grid(row=0, column=0, padx=2, pady=2)
 vx1 = tk.Entry(ramka3)
@@ -832,8 +718,11 @@ masacz2 = tk.Entry(ramka3)
 masacz2.grid(row=3, column=4)
 masacz2.insert(0, '0')
 
+"funkcja dzialajaca podobnie jak 'pisz' oraz 'pisz2"
+
 
 def pisz3(typ):
+    global czasteczka20, czasteczka30
     try:
         float(vx1.get())
     except ValueError:
@@ -959,57 +848,36 @@ def pisz3(typ):
             masacz2.delete(0, tk.END)
             masacz2.insert(0, "to musi byc liczba dodatnia")
             return
-
     if typ == 1:
         czasteczka20 = Czastka(typ=1, pr_x=float(vx1.get()), pr_y=float(vy1.get()), pr_z=float(vz1.get()),
                                mas_spo=float(masacz1.get()))
         czasteczka30 = Czastka(typ=1, pr_x=float(vx2.get()), pr_y=float(vy2.get()), pr_z=float(vz2.get()),
                                mas_spo=float(masacz2.get()))
-        zmiennamomo1 = tk.StringVar()
-        momo1 = tk.Label(ramka3, textvariable=zmiennamomo1)
-        momo1.grid(row=5, column=0, columnspan=3)
-        try:
-            wzgl_predkosc, wzgl_szybkosc = czasteczka20.wzgledna_predkosc(czasteczka30)
-            czasteczka30.wzgledna_predkosc(czasteczka20)
-        except ZeroDivisionError:
+    elif typ == 2:
+        czasteczka20 = Czastka(typ=0, pr_x=float(vx1.get()), pr_y=float(vy1.get()), pr_z=float(vz1.get()),
+                               mas_spo=float(masacz1.get()))
+        czasteczka30 = Czastka(typ=0, pr_x=float(vx2.get()), pr_y=float(vy2.get()), pr_z=float(vz2.get()),
+                               mas_spo=float(masacz2.get()))
+    momo1 = tk.Label(ramka3, width=200)
+    try:
+        wzgl_predkosc, wzgl_szybkosc = czasteczka20.wzgledna_predkosc(czasteczka30)
+        czasteczka30.wzgledna_predkosc(czasteczka20)
+    except ZeroDivisionError:
+        momo1.config(text='zerowa predkosc ktorejs czastki (dzielenie przez 0)')
+        momo1.place(x=100, y=200)
+        return
+    momo1.config(text='predkosc czastki 2 wzgledem czastki 1 wynosi: [' + str(wzgl_predkosc[0]) + ', ' + str(
+        wzgl_predkosc[1]) + ', ' + str(wzgl_predkosc[2]) + ']')
+    momo1.place(x=100, y=200)
+    momo2 = tk.Label(ramka3, text='szybkosc czastki 2 wzgledem czastki 1 wynosi: ' + str(wzgl_szybkosc))
+    momo2.place(x=300, y=220)
 
-            zmiennamomo1.set('zerowa predkosc ktorejs czastki (dzielenie przez 0)')
-            return
-
-        zmiennamomo1.set('predkosc czastki 2 wzgledem czastki 1 wynosi: [' + str(wzgl_predkosc[0]) + ', ' + str(
-            wzgl_predkosc[1]) + ', ' + str(wzgl_predkosc[2]) + ']')
-
-        momo2 = tk.Label(ramka3, text='szybkosc czastki 2 wzgledem czastki 1 wynosi: ' + str(wzgl_szybkosc)).grid(row=6,
-                                                                                                                  column=0,
-                                                                                                                  columnspan=3)
-        momo3 = tk.Label(ramka3, text="masa czastki 1 wzgledem czastki 2 wynosi: " + str(
-            czasteczka20.masa_relatywistyczna(czasteczka30.wzgledna_predkosc(czasteczka20)[1]))).grid(row=7, column=0,
-                                                                                                      columnspan=3)
-        momo4 = tk.Label(ramka3,
-                         text="masa czastki 2 wzgledem czastki 1 wynosi: " + str(czasteczka30.masa_relatywistyczna(
-                             czasteczka20.wzgledna_predkosc(czasteczka30)[1]))).grid(row=8, column=0, columnspan=3)
-        if typ == 2:
-            czasteczka20 = Czastka(typ=0, pr_x=float(vx1.get()), pr_y=float(vy1.get()), pr_z=float(vz1.get()),
-                                   mas_spo=float(masacz1.get()))
-            czasteczka30 = Czastka(typ=0, pr_x=float(vx2.get()), pr_y=float(vy2.get()), pr_z=float(vz2.get()),
-                                   mas_spo=float(masacz2.get()))
-            wzgl_predkosc, wzgl_szybkosc = czasteczka20.wzgledna_predkosc(czasteczka30)
-            momo1 = tk.Label(ramka3,
-                             text='predkosc czastki 2 wzgledem czastki 1 wynosi: [' + str(
-                                 wzgl_predkosc[0]) + ', ' + str(
-                                 wzgl_predkosc[1]) + ', ' + str(wzgl_predkosc[2]) + ']').grid(row=5, column=0,
-                                                                                              columnspan=3)
-            momo2 = tk.Label(ramka3, text='szybkosc czastki 2 wzgledem czastki 1 wynosi: ' + str(wzgl_szybkosc)).grid(
-                row=6,
-                column=0,
-                columnspan=3)
-            momo3 = tk.Label(ramka3, text="masa czastki 1 wzgledem czastki 2 wynosi: " + str(
-                czasteczka20.masa_relatywistyczna(czasteczka30.wzgledna_predkosc(czasteczka20)[1]))).grid(row=7,
-                                                                                                          column=0,
-                                                                                                          columnspan=3)
-            momo4 = tk.Label(ramka3,
-                             text="masa czastki 2 wzgledem czastki 1 wynosi: " + str(czasteczka30.masa_relatywistyczna(
-                                 czasteczka20.wzgledna_predkosc(czasteczka30)[1]))).grid(row=8, column=0, columnspan=3)
+    momo3 = tk.Label(ramka3, text="masa czastki 1 wzgledem czastki 2 wynosi: " + str(
+        czasteczka20.masa_relatywistyczna(czasteczka30.wzgledna_predkosc(czasteczka20)[1])))
+    momo3.place(x=300, y=240)
+    momo4 = tk.Label(ramka3, text="masa czastki 2 wzgledem czastki 1 wynosi: " + str(czasteczka30.masa_relatywistyczna(
+        czasteczka20.wzgledna_predkosc(czasteczka30)[1])))
+    momo4.place(x=300, y=260)
 
 
 l3 = tk.IntVar()
@@ -1023,5 +891,5 @@ radio31.grid(row=0, column=5, padx=2, pady=2)
 
 radio32 = tk.Radiobutton(ramka3, text='ulamek predkosci swiatla', variable=l3, value=2)
 radio32.grid(row=1, column=5, padx=2, pady=2)
-
+"okno.mainloop() sluzy do tego, aby okno bylo uruchomione do momentu, gdy zostanie wylaczone przez uzytkownika"
 okno.mainloop()
